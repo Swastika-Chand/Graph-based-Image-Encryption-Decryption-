@@ -2,6 +2,7 @@ import numpy as np
 import random
 from graph_utils import kruskal_mst, dfs_order
 from utils import get_seed_from_hash
+# Removed import of visualize_mst_and_dfs
 
 def encrypt_channel(channel, hashed_key):
     mst_adj, rows, cols = kruskal_mst(channel)
@@ -11,6 +12,7 @@ def encrypt_channel(channel, hashed_key):
     np.random.seed(seed)
     start_node = random.randint(0, size - 1)
     order = dfs_order(mst_adj, start_node, size)
+
     flat = channel.flatten()
     values = flat[order]
     perm = np.random.permutation(len(values))
@@ -18,7 +20,9 @@ def encrypt_channel(channel, hashed_key):
     encrypted = np.zeros(size, dtype=np.uint8)
     for idx, val in zip(order, shuffled):
         encrypted[idx] = val
+
     return encrypted.reshape(rows, cols), order, perm, start_node, rows, cols
+
 
 def decrypt_channel(enc_channel, order, perm, hashed_key, start_node, rows, cols):
     size = rows * cols
