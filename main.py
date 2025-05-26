@@ -46,10 +46,42 @@ def main():
         salt = generate_salt()
         hashed = hash_key_with_salt(key, salt)
 
-        # Encrypt each channel (visualization removed)
-        R_enc, R_ord, R_perm, R_start, rows, cols = encrypt_channel(R, hashed)
-        G_enc, G_ord, G_perm, G_start, _, _ = encrypt_channel(G, hashed)
-        B_enc, B_ord, B_perm, B_start, _, _ = encrypt_channel(B, hashed)
+        # --- Visualization (optional) ---
+        if input("Do you want to visualize actual DFS traversal on a selected image patch? (y/n): ").strip().lower() == 'y':
+            channel_choice = input("Choose color channel to visualize (R/G/B): ").strip().upper()
+            if channel_choice not in ['R', 'G', 'B']:
+                print("Invalid channel. Skipping visualization.")
+            else:
+                try:
+                    patch_rows = int(input("Enter patch height (e.g., 10): "))
+                    patch_cols = int(input("Enter patch width (e.g., 10): "))
+                    row_start = int(input("Enter starting row index (e.g., 0): "))
+                    col_start = int(input("Enter starting column index (e.g., 0): "))
+
+                    # Map channel
+                    channel_map = {'R': R, 'G': G, 'B': B}
+                    selected_channel = channel_map[channel_choice]
+
+                    # Extract patch
+                    patch = selected_channel[row_start:row_start+patch_rows, col_start:col_start+patch_cols]
+                    if patch.shape[0] < patch_rows or patch.shape[1] < patch_cols:
+                        print("Selected patch exceeds image boundaries. Skipping visualization.")
+                    else:
+                        title = f"{channel_choice} Channel DFS Traversal Patch ({patch_rows}x{patch_cols})"
+                        encrypt_channel(
+                            patch,
+                            hashed_key=hashed,
+                            visualize=True,
+                            title_prefix=title,
+                            partial_visualize=False
+                        )
+                except ValueError:
+                    print("Invalid input for patch size or position. Skipping visualization.")
+
+        # --- Encrypt full image ---
+        R_enc, R_ord, R_perm, R_start, rows, cols = encrypt_channel(R, hashed, visualize=False)
+        G_enc, G_ord, G_perm, G_start, _, _ = encrypt_channel(G, hashed, visualize=False)
+        B_enc, B_ord, B_perm, B_start, _, _ = encrypt_channel(B, hashed, visualize=False)
 
         encrypted_img = cv2.merge([B_enc, G_enc, R_enc])
         filename = "encrypted_" + os.path.basename(image_path)
