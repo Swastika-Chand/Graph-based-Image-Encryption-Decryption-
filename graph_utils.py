@@ -32,28 +32,34 @@ def union(parent, rank, x, y):
 
 def kruskal_mst(channel):
     edges, rows, cols = image_to_edges(channel)
-    edges.sort(key=lambda e: e[2])
+    edges.sort(key=lambda e: e[2])  # Sort by weight
     parent = {i: i for i in range(rows * cols)}
     rank = {i: 0 for i in range(rows * cols)}
     mst_adj = {i: [] for i in range(rows * cols)}
-    for u, v, _ in edges:
+    
+    for u, v, w in edges:
         if find(parent, u) != find(parent, v):
             union(parent, rank, u, v)
-            mst_adj[u].append(v)
-            mst_adj[v].append(u)
+            mst_adj[u].append((v, w))  # Store with weight
+            mst_adj[v].append((u, w))  # Store both directions
+
     return mst_adj, rows, cols
+
 
 def dfs_order(mst_adj, start_node, size):
     visited, stack, order = set(), [start_node], []
+
     while stack:
         node = stack.pop()
         if node not in visited:
             visited.add(node)
             order.append(node)
-            for nbr in reversed(mst_adj[node]):
+            for nbr, _ in reversed(mst_adj[node]):  # Unpack the neighbor and weight
                 if nbr not in visited:
                     stack.append(nbr)
+
     for node in range(size):
         if node not in visited:
             order.append(node)
+
     return order
